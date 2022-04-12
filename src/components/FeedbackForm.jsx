@@ -2,9 +2,21 @@ import React from 'react'
 import Card from './shared/Card'
 import Button from './shared/Button'
 import RatingSelect from './RatingSelect'
-import {useState} from 'react'
+import {useState, useContext, useEffect} from 'react'
+import FeedbackContext from '../context/FeedbackContext'
 
-function FeedbackForm({handleAdd}) {
+function FeedbackForm() {
+    const {addFeedback, feedbackEdit, updateFeedback} = useContext(FeedbackContext)
+
+    // emtpy dependency array means it only uses effect on component load
+    // feedbackEdit dependency triggers it on each edit
+    useEffect(() => {
+        if(feedbackEdit.edit === true) {
+            setBtnDisabled(false)
+            setText(feedbackEdit.item.text)
+            setRating(feedbackEdit.item.rating)
+        }
+    }, [feedbackEdit])
 
     const[text, setText] = useState('')
     const[rating, setRating] = useState(10)
@@ -32,7 +44,12 @@ function FeedbackForm({handleAdd}) {
                 text,
                 rating
             }
-            handleAdd(newFeedback)
+            if (feedbackEdit.edit === true) {
+                updateFeedback(feedbackEdit.item.id, newFeedback)
+            }
+            else {
+                addFeedback(newFeedback)
+            }
         }
     }
 
@@ -40,7 +57,7 @@ function FeedbackForm({handleAdd}) {
     <Card>
         <form on onSubmit={handleSubmit}>
             <h2>How would you rate your service with us?</h2>
-            <RatingSelect select={setRating} selected={rating} />
+            <RatingSelect select={setRating}/>
             <div className="input-group">
                 <input 
                     onChange={handleTextChange} 
